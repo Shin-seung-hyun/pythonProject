@@ -1,130 +1,81 @@
-import requests
-from bs4 import BeautifulSoup
 import re
 
-#total_url에 크롤링할 url 입력
-total_url = 'https://subslikescript.com/series/Screen_One-297625'
-response = requests.get(total_url)
-titles = list()
+def modifyScripts():
+    r = open('The_Moon_Rising_River.txt', 'r+', encoding='UTF-8')    # 원본 파일 읽어오기
+    w = open('The_Moon_Rising_River_raw.txt', 'a+', encoding='UTF-8')    # 전처리 된 raw 파일 생성
 
-if response.status_code == 200:
-    html = response.text
-    soup = BeautifulSoup(html, 'html.parser')
-    links = soup.select("a")
-    for href in soup.find("div", class_="series_seasons").find_all("li"):
-        titles.append(href.find("a")["href"])
+    while True:
+        line = r.readline()
+        if not line: break
 
-else:
-    print(response.status_code)
+        if '!' in line:  # '!' -> '.'
+            line = line.replace('!', '.')
 
-for i in titles:
-    url = 'https://subslikescript.com' + i
+        if '&' in line:  # '&' -> 'and'
+            line = line.replace('&', 'and')
 
-    html = requests.get(url)
-    soup = BeautifulSoup(html.text)
+        if 'um...' in line:  # 'um...' -> 'um.'
+            line = line.replace('um...', 'um.')
 
-    if html.status_code == 200:
-        script_tag = soup.find_all(['script', 'style', 'header', 'footer', 'form'])
-        script_tags = ['body > div > div > main > nav.prevnext',
-                       'body > div > div > main > article > h1',
-                       'body > div > div > main > nav:nth-child(1) > ul',
-                       'head > title']
+        if 'Um...' in line:  # 'Um...' -> 'Um.'
+            line = line.replace('Um...', 'Um.')
 
-        for script in script_tag:
-            script.extract()
+        if 'so...' in line:  # 'so...' -> 'so.'
+            line = line.replace('so...', 'so.')
 
-        for i in script_tags:
-            script_tag2= soup.select_one(i)
-            script_tag2.extract()
+        if 'uh...' in line:  # 'uh...' -> 'uh.'
+            line = line.replace('uh...', 'uh.')
 
-        content = soup.get_text('\n', strip=True)
-        #print(content)
+        if 'a.m.' in line:  # 'a.m.' -> 'am'
+            line = line.replace('a.m.', 'am')
 
-        f1=open('crawling.txt','w',encoding='UTF-8')
-        f1.write(content)
-        f1.close()
+        if 'p.m.' in line:  # 'p.m.' -> 'pm'
+            line = line.replace('p.m.', 'pm')
 
-        # 스크립트 파일 정제
-        r = open('crawling.txt', 'r+', encoding='UTF-8')
-        w = open('crawling_raw.txt', 'a+', encoding='UTF-8')
+        rm_pattern = [
+            '\([A-Z].*\)\s',  # [문장] 제거
+            '\[[A-Z].*\]\s',  # (문장) 제거
+            '^♪\s[A-Z].*',  # '♪' 문장 제거
+            '\-\s',  # '- ' 제거
+            '\#',  # '#' 제거
+            '"',  # " 제거
+            "^(')",  # '문장' '의 제거
+            "\s(')$",
+            '[A-Z].*\:\s',  # '이름:' 제거
+            '[A-Z].*\.\.\.' # '...' 제거
+            '^\s'  # 공백제거 (제일 나중에 해야함)
+        ]
 
-        while True:
-            line = r.readline()
-            if not line: break
+        for i in rm_pattern:
+            line = re.sub(pattern=i, repl='', string=line)
 
-            # if '"' in line:  # '"' 제거
-            #     line = line.replace('"', '')
-
-            # if '#' in line:  # '#' 제거
-            #     line = line.replace('#', '')
-
-            # if '- ' in line:  # '- ' 제거
-            #     line = line.replace('- ', '')
-
-            if '!' in line:  # '!' -> '.'
-                line = line.replace('!', '.')
-
-            if '&' in line:  # '&' -> 'and'
-                line = line.replace('&', 'and')
-
-            if 'um...' in line:  #소문자 'um...' -> 'um.'
-                line = line.replace('um...', 'um.')
-
-            if 'Um...' in line:  #대문자'Um...' -> 'Um.'
-                line = line.replace('Um...', 'Um.')
-
-            if 'Mmm-mmm...' in line:  # 'Mmm-mmm...' -> 'Mmm mmm.'
-                line = line.replace('Mmm-mmm...', 'Mmm mmm.')
-
-            if 'so...' in line:  # 'so...' -> 'so.'
-                line = line.replace('um...', 'um.')
-
-            if 'uh...' in line:  # 'uh...' -> 'uh.'
-                line = line.replace('um...', 'um.')
-
-            if 'a.m.' in line:  # 'a.m.' -> 'am'
-                line = line.replace('a.m.', 'am')
-
-            if 'p.m.' in line:  # 'p.m.' -> 'pm'
-                line = line.replace('p.m.', 'pm')
-
-            if 'e-mail' in line:  # 'e-mail' -> 'email'
-                line = line.replace('e-mail', 'email')
-
-            if 'T-shirt' in line:  # 'T-shirt' -> 'Tshirt'
-                line = line.replace('T-shirt', 'Tshirt')
-
-            # matchObj=re.search('\([A-Z].*\)\s',line) #(문장)제거
-            # if (matchObj != None):
-            #     line = re.sub(pattern='\([A-Z].*\)\s',repl='', string=line)
-
-            w.write(line)
-
-        r.close()
-        w.close()
-
-    else:
-        print(html.status_code)
-
-    line = re.sub(pattern='\([A-Z].*\)\s', repl='', string=line)
-    line = re.sub(pattern='\[[A-Z].*\]\s', repl='', string=line)
-    line = re.sub(pattern='^♪\s[A-Z].*', repl='', string=line)
-    line = re.sub(pattern='^\s', repl='', string=line)  # 항상 맨 마지막에 있어야하는 공백 제거
-
-    rm_pattern = [
-        '\([A-Z].*\)\s',  # [문장] 제거
-        '\[[A-Z].*\]\s',  # (문장) 제거
-        '^♪\s[A-Z].*',  # '♪' 문장 제거
-        '\-\s'   # '-' 제거
-        '\#'    # '#' 제거
-        '"'     # " 제거
-        "^(')"  # '문장' '의 제거
-        "\s(')$"
-        '[A-Z].*\:\s' # '이름:' 제거
-
-        '^\s'  #공백제거 (제일 나중에 해야함)
-    ]
-
-    for i in rm_pattern:
-        line = re.sub(pattern=rm_pattern, repl='', string=line)
         w.write(line)
+
+    r.close()
+    w.close()
+
+def attachTag() :
+    r = open('The_Moon_Rising_River_raw.txt', 'r+', encoding='UTF-8')  # raw 파일 읽어오기
+    w = open('The_Moon_Rising_River_tag.txt', 'a+', encoding='UTF-8')  # tag가 부착된 tag 파일 생성
+
+    while True:
+        line = r.readline()
+        if not line: break
+
+        line = re.sub(pattern='\s', repl='\tO\n', string=line)
+        line = re.sub(pattern='^	O', repl='', string=line)
+        line = re.sub(pattern='\,\tO', repl='\tCOMMA', string=line)
+        line = re.sub(pattern='\.\tO', repl='\tPERIOD', string=line)
+        line = re.sub(pattern='\?\tO', repl="\tQUESTION", string=line)
+        line = re.sub(pattern="'s\tO", repl="\tO\n's\tO", string=line)
+        line = re.sub(pattern="'re\tO", repl="\tO\n're\tO", string=line)
+        line = re.sub(pattern="'m\tO", repl="\tO\n'm\tO", string=line)
+        line = re.sub(pattern="'m\tO", repl="\tO\n'm\tO", string=line)
+        line = re.sub(pattern="'ll\tO", repl="\tO\n'll\tO", string=line)
+        line = re.sub(pattern="n't\tO", repl="\tO\nn't\tO", string=line)
+
+        w.write(line)
+
+
+    r.close()
+    w.close()
