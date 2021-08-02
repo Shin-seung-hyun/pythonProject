@@ -2,8 +2,6 @@ import requests
 import WebCrawling
 from bs4 import BeautifulSoup
 
-
-
 def getUrl(input, titles) :
     response = requests.get(input)
 
@@ -50,8 +48,10 @@ if __name__ == '__main__':
     total_url = 'https://subslikescript.com/series/The_Moon_Rising_River-13634686'
     titles = list()
 
+    #1 데이터 정제
     getUrl(total_url, titles)   # 전체 스크립트 URL 가져오기
     getScripts(titles)    # 스크립트 본문 가져오기
     WebCrawling.modifyScripts()     # 스크립트 전처리
 
+    #2 태그 부착
     #change.attachTag() # 정제된 스크립트에 tag 부착

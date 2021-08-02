@@ -15,7 +15,6 @@ def modifyScripts():
         "^(')",  # '문장' '의 제거
         "\s(')$",
         '[A-Z].*\:\s',  # '이름:' 제거
-        #'.*\.\.\..*', #...삭제
         'OpenSubtitles recommends using Nord VPN',
         'from 3.49 USD/month ----> osdb.link/vpn',
         '^\s'  # 공백제거 (제일 나중에 해야함)
@@ -30,7 +29,7 @@ def modifyScripts():
         'non-'
     ]
 
-    lines = r.readlines()  # 전체 스크립트
+    lines = r.readlines()  # 전체 스크립트(읽어온 문장을 모두 리스트로 저장)
     lines = list(map(lambda s: s.strip(), lines))  # 전체 스크립트에서 개행문자 삭제
     count = 0  # index
     file_list = list()  # 한 줄씩 입력하기 위해 생성한 빈 리스트
@@ -73,6 +72,7 @@ def modifyScripts():
         if '-in-law' in line:  # '-in-law' -> ' in law'
             line = line.replace('-in-law', ' in law')
 
+        #... 제거를 위해 시작 문자가 대문자가 되도록 정렬
         if line != "":
             if count == 0:
                 file_list.insert(count, line)
@@ -84,15 +84,14 @@ def modifyScripts():
                 else:
                     file_list[count - 1] = file_list[count - 1] + ' ' + line
 
-    for i in file_list:
+    for i in file_list: #...이 들어간 문장 제거
         if re.search('.*\.\.\..*',i) == None:
             w.write(i + '\n')
-
-    r.write("")
 
     r.close()
     w.close()
 
+#태그 붙이기
 def attachTag() :
     r = open('The_Moon_Rising_River_raw.txt', 'r+', encoding='UTF-8')  # raw 파일 읽어오기
     w = open('The_Moon_Rising_River_tag.txt', 'a+', encoding='UTF-8')  # tag가 부착된 tag 파일 생성
