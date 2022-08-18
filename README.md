@@ -1,7 +1,7 @@
 # pythonProject
 WebCrawling
 
-[ 영어 구두점 복원기 학습 데이터 생성을 위한 문장단위 분절 자동화 툴 개발 ]
+[ 영어 구두점 복원 학습 데이터 생성을 위한 문장단위 분절 자동화 툴 개발 ]
 
 오픈소스: xashru/punctuation-restoration 
 
